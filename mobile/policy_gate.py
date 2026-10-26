@@ -35,7 +35,8 @@ import re
 RELEASE_ACTIONS = {"export", "share"}
 EVIDENCE_ACTIONS = {"code", "memo", "review", "export"}
 
-# Moving a label up this ladder claims more than the evidence supports.
+# Moving a label up this ladder claims more than the evidence supports. The
+# labels themselves come from the shared schema; tests check the two agree.
 FIDELITY_RANK = {"reconstruction": 0, "user-supplied": 1, "transcription": 2, "direct": 3}
 
 

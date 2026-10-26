@@ -10,8 +10,12 @@ The mobile layer of **Reflexive**, a governed agentic workflow for researcher-as
 ## What is here
 
 ```
+schema/
+  reflexive.schema.json the single source of truth
+  reflexive_schema.py   Python reader (stdlib)
+  typescript/           TypeScript reader (Ajv)
+  fixtures.json         cases both must agree on
 mobile/
-  envelope.schema.json  what the phone writes (v0.1)
   ingest.py             inbox → raw: the only door
   policy_gate.py        deterministic refusals
 study/
@@ -19,15 +23,28 @@ study/
   review_desk.py        desktop review, logged
   measures.py           catch, escape, rubber-stamp
   redteam/              24 attacks on 4 rules
-tests/                  36 tests (stdlib unittest)
+tools/
+  fidelity_report.py    read-only label counts
+tests/                  45 tests (stdlib unittest)
 docs/iphone/            the design, 1 file per part
 ```
 
 ```
-python3 -m unittest discover -s tests
+python3 -m unittest discover -s tests          # Python kit
+cd schema/typescript && npm install && npm test  # TypeScript reader
 ```
 
-Python 3, standard library only.
+The Python kit uses only the standard library.
+
+## Which part does what
+
+| Part | Language | Job | Does not |
+|---|---|---|---|
+| **Shared schema** (`schema/reflexive.schema.json`) | JSON Schema 2020-12 | Defines every format the two sides exchange: phone envelope, review item, review decision, fidelity labels | Hold data. It changes only by a versioned proposal (docs/iphone/07_schema.md). |
+| **Research kit** (this repo) | Python | Ingest into raw, refusal gate, seeding and sealing, study measures, red-team runs, corpus reports | Draw interfaces, or rewrite the corpus |
+| **TypeScript workspace** (separate) | TypeScript | The interface and the demo | Redefine formats. It imports `schema/typescript/validate.ts`, which reads the same schema file. |
+
+Neither side copies the schema's rules into its own code. Python reads the file through `schema/reflexive_schema.py`; TypeScript reads it through Ajv. `schema/fixtures.json` lists cases with a known answer, and both test suites must get every one right. If the two readers disagree, a test fails before the formats can drift apart.
 
 ## What is not here
 

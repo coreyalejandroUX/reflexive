@@ -14,3 +14,6 @@ deid_watchlist.txt
 
 __pycache__/
 *.pyc
+schema/typescript/node_modules/
+schema/typescript/dist/
+schema/typescript/package-lock.json

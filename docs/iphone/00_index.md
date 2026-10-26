@@ -15,3 +15,4 @@ One file per deliverable, so each one fits a bus ride. Read in order, or jump.
 | [08_tests.md](08_tests.md) | 36 new tests, refusal break suite |
 | [09_risks.md](09_risks.md) | Bad days and failure modes, each with its fix |
 | [10_framing.md](10_framing.md) | Two framing paragraphs for you to rewrite |
+| [11_grant_vs_repository.md](11_grant_vs_repository.md) | Where the grant application and the repository disagree |

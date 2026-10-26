@@ -4,9 +4,10 @@ Run all of them from the repo root:
 
 ```
 python3 -m unittest discover -s tests
+cd schema/typescript && npm install && npm test
 ```
 
-**Status today: 36 tests, all passing.** These are separate from your 19 existing tests, which I could not see (conflict C1). Once the corpus is reachable, `ingest.py` should also run against your real `raw/` and pass your 19.
+**Status today: 45 Python tests and 16 TypeScript conformance tests, all passing.** These are separate from your 19 existing tests, which I could not see (conflict C1). Once the corpus is reachable, `ingest.py` should also run against your real `raw/` and pass your 19.
 
 ## Preserve on the mobile path (`tests/test_ingest.py`, 13 tests)
 
@@ -83,6 +84,26 @@ A break IS: ALLOW where the rule forbids. An over-refusal (stricter than expecte
 | phone float numbers are accepted | Shortcuts compatibility |
 | a long dwell counts as interrupted | interruptions do not inflate review time |
 | Wilson interval is wide for small n | no bare rates |
+
+## Shared schema (`tests/test_schema.py`, 6 tests; `schema/typescript/conformance.test.ts`, 16 tests)
+
+| Test | Protects |
+|---|---|
+| Python matches every shared fixture | Python and TypeScript give the same verdicts |
+| (TypeScript) each of the 16 fixtures | same, from the TypeScript side |
+| fidelity labels are the four grant labels | no silent relabeling |
+| support strength is only proposed, and not in the envelope | proposal P7 stays a proposal |
+| policy gate ranks exactly the schema labels | the gate cannot drift from the schema |
+| allowed fidelity covers every capture type, with real labels | ingest cannot drift from the schema |
+| the reader refuses keywords it does not implement | the schema cannot outgrow the Python reader silently |
+
+## Corpus report (`tests/test_fidelity_report.py`, 3 tests)
+
+| Test | Protects |
+|---|---|
+| counts exact values without normalizing | no relabeling, even in a report |
+| reports unlabeled records and unreadable files | nothing is silently skipped |
+| never modifies the corpus (tree hash unchanged) | read-only |
 
 ## Planned, not written yet
 

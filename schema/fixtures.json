@@ -1,0 +1,257 @@
+[
+ {
+  "name": "envelope: valid context loss",
+  "def": "mobile_envelope",
+  "doc": {
+   "envelope_version": "0.1",
+   "capture_id": "m-20261027T081512Z-a1b2",
+   "captured_at": "2026-10-27T08:15:12-05:00",
+   "device": "iphone",
+   "capture_type": "context_loss",
+   "fidelity": "user-supplied",
+   "text": "Lost the tutor chat after opening the bus ticket.",
+   "text_method": "dictation",
+   "text_sha256": "cc078762665cc7e61bf5bee1dc10c5008e3b70fefc11d02f4e8060f0177c4f86"
+  },
+  "valid": true
+ },
+ {
+  "name": "envelope: valid marker",
+  "def": "mobile_envelope",
+  "doc": {
+   "envelope_version": "0.1",
+   "capture_id": "m-20261027T081512Z-a1b2",
+   "captured_at": "2026-10-27T08:15:12-05:00",
+   "device": "iphone",
+   "capture_type": "marker",
+   "fidelity": "user-supplied",
+   "text": "",
+   "text_method": "none",
+   "text_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  "valid": true
+ },
+ {
+  "name": "envelope: minutes since event as number",
+  "def": "mobile_envelope",
+  "doc": {
+   "envelope_version": "0.1",
+   "capture_id": "m-20261027T081512Z-a1b2",
+   "captured_at": "2026-10-27T08:15:12-05:00",
+   "device": "iphone",
+   "capture_type": "context_loss",
+   "fidelity": "user-supplied",
+   "text": "Lost the tutor chat after opening the bus ticket.",
+   "text_method": "dictation",
+   "text_sha256": "cc078762665cc7e61bf5bee1dc10c5008e3b70fefc11d02f4e8060f0177c4f86",
+   "minutes_since_event": 4
+  },
+  "valid": true
+ },
+ {
+  "name": "envelope: minutes since event unknown",
+  "def": "mobile_envelope",
+  "doc": {
+   "envelope_version": "0.1",
+   "capture_id": "m-20261027T081512Z-a1b2",
+   "captured_at": "2026-10-27T08:15:12-05:00",
+   "device": "iphone",
+   "capture_type": "context_loss",
+   "fidelity": "user-supplied",
+   "text": "Lost the tutor chat after opening the bus ticket.",
+   "text_method": "dictation",
+   "text_sha256": "cc078762665cc7e61bf5bee1dc10c5008e3b70fefc11d02f4e8060f0177c4f86",
+   "minutes_since_event": "unknown"
+  },
+  "valid": true
+ },
+ {
+  "name": "envelope: unknown fidelity label",
+  "def": "mobile_envelope",
+  "doc": {
+   "envelope_version": "0.1",
+   "capture_id": "m-20261027T081512Z-a1b2",
+   "captured_at": "2026-10-27T08:15:12-05:00",
+   "device": "iphone",
+   "capture_type": "context_loss",
+   "fidelity": "corroborated",
+   "text": "Lost the tutor chat after opening the bus ticket.",
+   "text_method": "dictation",
+   "text_sha256": "cc078762665cc7e61bf5bee1dc10c5008e3b70fefc11d02f4e8060f0177c4f86"
+  },
+  "valid": false
+ },
+ {
+  "name": "envelope: unknown field",
+  "def": "mobile_envelope",
+  "doc": {
+   "envelope_version": "0.1",
+   "capture_id": "m-20261027T081512Z-a1b2",
+   "captured_at": "2026-10-27T08:15:12-05:00",
+   "device": "iphone",
+   "capture_type": "context_loss",
+   "fidelity": "user-supplied",
+   "text": "Lost the tutor chat after opening the bus ticket.",
+   "text_method": "dictation",
+   "text_sha256": "cc078762665cc7e61bf5bee1dc10c5008e3b70fefc11d02f4e8060f0177c4f86",
+   "mood": "low"
+  },
+  "valid": false
+ },
+ {
+  "name": "envelope: missing hash",
+  "def": "mobile_envelope",
+  "doc": {
+   "envelope_version": "0.1",
+   "capture_id": "m-20261027T081512Z-a1b2",
+   "captured_at": "2026-10-27T08:15:12-05:00",
+   "device": "iphone",
+   "capture_type": "context_loss",
+   "fidelity": "user-supplied",
+   "text": "Lost the tutor chat after opening the bus ticket.",
+   "text_method": "dictation"
+  },
+  "valid": false
+ },
+ {
+  "name": "envelope: bad capture id",
+  "def": "mobile_envelope",
+  "doc": {
+   "envelope_version": "0.1",
+   "capture_id": "note-1",
+   "captured_at": "2026-10-27T08:15:12-05:00",
+   "device": "iphone",
+   "capture_type": "context_loss",
+   "fidelity": "user-supplied",
+   "text": "Lost the tutor chat after opening the bus ticket.",
+   "text_method": "dictation",
+   "text_sha256": "cc078762665cc7e61bf5bee1dc10c5008e3b70fefc11d02f4e8060f0177c4f86"
+  },
+  "valid": false
+ },
+ {
+  "name": "envelope: wrong device",
+  "def": "mobile_envelope",
+  "doc": {
+   "envelope_version": "0.1",
+   "capture_id": "m-20261027T081512Z-a1b2",
+   "captured_at": "2026-10-27T08:15:12-05:00",
+   "device": "android",
+   "capture_type": "context_loss",
+   "fidelity": "user-supplied",
+   "text": "Lost the tutor chat after opening the bus ticket.",
+   "text_method": "dictation",
+   "text_sha256": "cc078762665cc7e61bf5bee1dc10c5008e3b70fefc11d02f4e8060f0177c4f86"
+  },
+  "valid": false
+ },
+ {
+  "name": "envelope: negative minutes",
+  "def": "mobile_envelope",
+  "doc": {
+   "envelope_version": "0.1",
+   "capture_id": "m-20261027T081512Z-a1b2",
+   "captured_at": "2026-10-27T08:15:12-05:00",
+   "device": "iphone",
+   "capture_type": "context_loss",
+   "fidelity": "user-supplied",
+   "text": "Lost the tutor chat after opening the bus ticket.",
+   "text_method": "dictation",
+   "text_sha256": "cc078762665cc7e61bf5bee1dc10c5008e3b70fefc11d02f4e8060f0177c4f86",
+   "minutes_since_event": -1
+  },
+  "valid": false
+ },
+ {
+  "name": "decision: valid",
+  "def": "review_decision",
+  "doc": {
+   "decision_id": "d1",
+   "session_id": "s1",
+   "item_id": "it1",
+   "device": "phone",
+   "presented_at": "2026-11-03T08:00:00-06:00",
+   "decided_at": "2026-11-03T08:00:09-06:00",
+   "dwell_ms": 9000.0,
+   "outcome": "supported",
+   "item_words": 30,
+   "interrupted": false
+  },
+  "valid": true
+ },
+ {
+  "name": "decision: missing device",
+  "def": "review_decision",
+  "doc": {
+   "decision_id": "d1",
+   "session_id": "s1",
+   "item_id": "it1",
+   "presented_at": "2026-11-03T08:00:00-06:00",
+   "decided_at": "2026-11-03T08:00:09-06:00",
+   "dwell_ms": 9000.0,
+   "outcome": "supported",
+   "item_words": 30,
+   "interrupted": false
+  },
+  "valid": false
+ },
+ {
+  "name": "decision: unknown outcome",
+  "def": "review_decision",
+  "doc": {
+   "decision_id": "d1",
+   "session_id": "s1",
+   "item_id": "it1",
+   "device": "phone",
+   "presented_at": "2026-11-03T08:00:00-06:00",
+   "decided_at": "2026-11-03T08:00:09-06:00",
+   "dwell_ms": 9000.0,
+   "outcome": "maybe",
+   "item_words": 30,
+   "interrupted": false
+  },
+  "valid": false
+ },
+ {
+  "name": "decision: boolean is not a number",
+  "def": "review_decision",
+  "doc": {
+   "decision_id": "d1",
+   "session_id": "s1",
+   "item_id": "it1",
+   "device": "phone",
+   "presented_at": "2026-11-03T08:00:00-06:00",
+   "decided_at": "2026-11-03T08:00:09-06:00",
+   "dwell_ms": true,
+   "outcome": "supported",
+   "item_words": 30,
+   "interrupted": false
+  },
+  "valid": false
+ },
+ {
+  "name": "item: valid",
+  "def": "review_item",
+  "doc": {
+   "item_id": "it1",
+   "queue": "desktop",
+   "evidence": "I switched apps and the chat was gone.",
+   "claim": "Code: context_loss",
+   "item_words": 12
+  },
+  "valid": true
+ },
+ {
+  "name": "item: seed field rejected",
+  "def": "review_item",
+  "doc": {
+   "item_id": "it1",
+   "queue": "desktop",
+   "evidence": "I switched apps and the chat was gone.",
+   "claim": "Code: context_loss",
+   "item_words": 12,
+   "seeded": true
+  },
+  "valid": false
+ }
+]

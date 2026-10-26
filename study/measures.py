@@ -39,35 +39,25 @@ import random
 import statistics
 import sys
 from datetime import datetime
+from pathlib import Path
 
-DEVICES = ("phone", "desktop")
-OUTCOMES = {"supported", "not_supported", "unsure", "stopped"}
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "schema"))
+from reflexive_schema import enum, validate  # noqa: E402
+
+DEVICES = tuple(enum("device"))
 DECIDED = {"supported", "not_supported", "unsure"}
 FLAGGED = {"not_supported", "unsure"}
-NUMBER = (int, float)
-DECISION_FIELDS = {
-    "decision_id": str, "session_id": str, "item_id": str, "device": str,
-    "presented_at": str, "decided_at": str, "dwell_ms": NUMBER,
-    "outcome": str, "item_words": NUMBER, "interrupted": bool,
-}
 
 
 def validate_decision(d: dict):
-    """Return a list of problems. An empty list means the decision is usable."""
-    problems = []
-    for key, typ in DECISION_FIELDS.items():
-        if key not in d:
-            problems.append(f"missing {key}")
-        elif not isinstance(d[key], typ) or (typ is NUMBER and isinstance(d[key], bool)):
-            problems.append(f"{key} must be {'number' if typ is NUMBER else typ.__name__}")
+    """Return a list of problems. An empty list means the decision is usable.
+
+    Field rules come from the shared schema ($defs/review_decision); the time
+    order check is a rule the schema cannot express.
+    """
+    problems = validate(d, "review_decision")
     if problems:
         return problems
-    if d["device"] not in DEVICES:
-        problems.append(f"device must be one of {DEVICES}")
-    if d["outcome"] not in OUTCOMES:
-        problems.append(f"outcome must be one of {sorted(OUTCOMES)}")
-    if d["dwell_ms"] < 0:
-        problems.append("dwell_ms must be >= 0")
     try:
         t0 = datetime.fromisoformat(d["presented_at"])
         t1 = datetime.fromisoformat(d["decided_at"])

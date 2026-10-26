@@ -2,9 +2,11 @@
 
 Three namespaces. Keeping them apart is how seeding stays out of the corpus.
 
+All three are defined in **one file**, `schema/reflexive.schema.json`. That file is the single source of truth. The Python kit reads it through `schema/reflexive_schema.py`, and the TypeScript workspace reads it through `schema/typescript/validate.ts` (Ajv). Both must give the same verdict on every case in `schema/fixtures.json`. Each side has a test for that.
+
 ```
  ENVELOPE 0.1      phone → inbox
- (mobile/envelope.schema.json)
+ ($defs/mobile_envelope)
         │ ingest.py
         ▼
  CORPUS 2.1 → 2.2  raw → … → release
@@ -50,6 +52,34 @@ Additive only. Every 2.1 record stays valid as 2.2. Status: **proposed**, not ad
 | P6 | `deid` | `{method, replacements}` | records that de-identification ran at capture and how many swaps it made, not what was swapped |
 
 **Migration:** none needed. Readers of 2.1 ignore the new fields. Structure writes 2.2 for new mobile captures only.
+
+## Proposal P7: two fidelity questions, two fields (status: proposed)
+
+The grant and the companion checkpoint use the word "fidelity" for two different questions:
+
+```
+ fidelity (2.1, unchanged)   support (2.2, proposed)
+ HOW was it captured?        HOW WELL is it backed?
+ ──────────────────────      ──────────────────────
+ direct                      corroborated
+ user-supplied               documented
+ transcription               no_source
+ reconstruction              unknown
+ set once, at Preserve       recomputed when sources
+ lives in raw/record         are attached; derived
+```
+
+- `fidelity` IS: a fact about the capture event, fixed at Preserve. It IS NOT: a rating of how trustworthy the content is.
+- `support` IS: a revisable judgment of how many independent sources back the record. It IS NOT: stored in raw, and it IS NOT written back into any existing capture.
+- `corroborated`: two or more independent source kinds (for example transcript plus screenshot). `documented`: at least one source. `no_source`: nothing attached. `unknown`: not yet checked.
+- **Naming decision for you:** the checkpoint shows `no_source` as "Reconstruction only". In storage I propose `no_source`, because a user-supplied account with nothing attached is not a reconstruction. The display text can stay as it is.
+
+**Migration note (P7):**
+1. **No existing capture is rewritten or relabeled.** All 68 stay byte-identical, and the raw manifest proves it.
+2. First, run `python3 tools/fidelity_report.py <corpus> --expect 68`. It is read-only and reports which values the captures actually carry, exactly as written.
+3. If some existing records hold checkpoint-style values ("Corroborated…") in their `fidelity` field, they keep them. A 2.2 reader shows those records with `fidelity: unknown (not recorded as a capture method)`, and reads the stored value as `support` in a derived view only.
+4. Any per-record correction is a new derived annotation with your decision logged. It is never an edit.
+5. On adoption: shared schema `x-version` goes 1.0.0 → 1.1.0, and the corpus schema goes 2.1 → 2.2. The `x-status: proposed` marker comes off `support_strength`, in one commit that only you approve.
 
 **Not proposed, on purpose:** any state or energy field. The check-in belongs to the study session, not to the evidence.
 

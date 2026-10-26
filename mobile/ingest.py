@@ -12,7 +12,8 @@ returns one decision:
     HOLD        not written; a person must look (reason given)
     REFUSE      not written; this must never enter raw (reason given)
 
-Rules enforced here (see docs/iphone/08_tests.md):
+Field rules come from the shared schema (schema/reflexive.schema.json,
+$defs/mobile_envelope). Rules enforced here (see docs/iphone/08_tests.md):
   - raw is append-only: an existing raw file is never overwritten
   - text_sha256 must match the text (evidence integrity)
   - a referenced attachment must exist and match its hash (missing source -> HOLD)
@@ -33,26 +34,13 @@ import re
 import sys
 from pathlib import Path
 
-ENVELOPE_VERSION = "0.1"
-REQUIRED = [
-    "envelope_version", "capture_id", "captured_at", "device", "capture_type",
-    "fidelity", "text", "text_method", "text_sha256",
-]
-OPTIONAL = ["attachment_file", "attachment_sha256", "minutes_since_event", "deid"]
-CAPTURE_TYPES = {"moment", "context_loss", "handoff", "marker"}
-FIDELITY = {"direct", "user-supplied", "transcription", "reconstruction"}
-TEXT_METHODS = {"dictation", "typed", "none"}
-CAPTURE_ID = re.compile(r"^m-[0-9]{8}T[0-9]{6}Z?-[A-Za-z0-9]{4,12}$")
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "schema"))
+from reflexive_schema import definition, validate  # noqa: E402
 
-# Which fidelity labels a phone capture may carry. A voice or typed account of
-# what happened is user-supplied. Rebuilding lost content from memory is a
-# reconstruction. "direct" needs an attached source file (screenshot, export).
-ALLOWED_FIDELITY = {
-    "moment": {"user-supplied", "reconstruction", "direct"},
-    "context_loss": {"user-supplied", "reconstruction"},
-    "handoff": {"user-supplied", "reconstruction"},
-    "marker": {"user-supplied"},
-}
+# Which fidelity labels a phone capture may carry, from the shared schema. A
+# voice or typed account is user-supplied; rebuilding lost content from memory
+# is a reconstruction; "direct" needs an attached source file.
+ALLOWED_FIDELITY = {k: set(v) for k, v in definition("mobile_envelope")["x-allowed-fidelity"].items()}
 
 # Any key that smells like the oversight study. Seeding lives in study/, never raw.
 FORBIDDEN_KEY = re.compile(r"seed|sealed|planted|study|experiment", re.IGNORECASE)
@@ -89,24 +77,10 @@ def check(env: dict, inbox: Path, watchlist):
     if bad:
         return "REFUSE", f"study field(s) {sorted(set(bad))} may not enter raw"
 
-    missing = [k for k in REQUIRED if k not in env]
-    if missing:
-        return "HOLD", f"missing field(s) {missing}"
-    extra = [k for k in env if k not in REQUIRED and k not in OPTIONAL]
-    if extra:
-        return "HOLD", f"unknown field(s) {extra}; propose a schema change first"
-    if env["envelope_version"] != ENVELOPE_VERSION:
-        return "HOLD", f"envelope_version {env['envelope_version']!r} not supported"
-    if not CAPTURE_ID.match(str(env["capture_id"])):
-        return "HOLD", "capture_id has the wrong shape"
-    if env["device"] != "iphone":
-        return "HOLD", "device must be 'iphone'"
-    if env["capture_type"] not in CAPTURE_TYPES:
-        return "HOLD", f"unknown capture_type {env['capture_type']!r}"
-    if env["fidelity"] not in FIDELITY:
-        return "HOLD", f"unknown fidelity {env['fidelity']!r}"
-    if env["text_method"] not in TEXT_METHODS:
-        return "HOLD", f"unknown text_method {env['text_method']!r}"
+    problems = validate(env, "mobile_envelope")
+    if problems:
+        hint = "; propose a schema change first" if any("unknown field" in p for p in problems) else ""
+        return "HOLD", "does not match the shared schema: " + "; ".join(problems) + hint
     if env["fidelity"] not in ALLOWED_FIDELITY[env["capture_type"]]:
         return "HOLD", (f"fidelity {env['fidelity']!r} is not allowed for "
                         f"{env['capture_type']!r} captures")
