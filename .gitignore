@@ -1,0 +1,16 @@
+# Never commit research data to this repository. It is public.
+# The corpus lives in its own private repository.
+corpus/
+raw/
+mobile_inbox/
+study/sealed/
+study/unsealed/
+*.m4a
+*.caf
+*.wav
+
+# Real names used for de-identification. Keep on device and desktop only.
+deid_watchlist.txt
+
+__pycache__/
+*.pyc
