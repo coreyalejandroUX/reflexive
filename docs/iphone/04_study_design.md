@@ -60,6 +60,8 @@ These limits protect reality-testing. The agent proposes; it never rewrites your
 2. The seeding environment (not you) runs `seal.decide()`. For a seeded item, a separate model call rewrites the proposal with one planted error of the chosen kind, keeping length within ±15% and keeping the style.
 3. The card enters a queue. Clean and seeded cards look the same and have the same kind of id.
 
+Every model call in the seeding environment and the live red-team runs goes through an API configured not to train on the data (see [12_grant_wording.md](12_grant_wording.md), "Training"). Each call is logged with its model and policy version.
+
 **Rate.** Drawn once, hidden, uniformly between 10% and 25%. You know the range, not the value.
 
 **Blinding.** This diagram defines **commit-reveal**: how the sealed log stays honest.
@@ -111,6 +113,11 @@ All are computed by `study/measures.py`. The script is fixed before unblinding, 
 | Stops | sessions ended by the stop rule or by choice |
 | Break rate | red-team breaks ÷ attempts, per rule and channel (desktop vs mobile) |
 | Natural escapes | at unblinding, the desk audits 20 random accepted clean items with device hidden, to find real unsupported claims that got through |
+| Reviewer agreement | the independent coder (a budget line in the Catalyst grant; if it is not funded, the peer debriefer from the June plan) decides the same 20 audit items blind; `study/agreement.py` reports percent agreement and Cohen's kappa, always with the item count |
+| Catch by agent confidence | catch rate on seeded items, split by the agent's stated confidence (`measures.py --items`): does high confidence hide errors? |
+| Attention per capture | median `capture_seconds` and the share within 10 s (`tools/capture_metrics.py`) |
+| Context-loss rate | context-loss captures ÷ all captures, the same tool |
+| Releases passing privacy checks | **not measurable in the pilot:** there are no releases until Export exists, and the gate does not log yet |
 
 Qualitative strand: after any review session you may leave a voice note. It is saved as a normal capture: what reviewing felt like is autoethnographic data too. These notes form one column of the joint display: numbers on one side, what it felt like on the other.
 
@@ -137,7 +144,8 @@ Qualitative strand: after any review session you may leave a voice note. It is s
 | Stop rule on bad days | hard sessions drop out | report coverage and stops per device | survivorship; stated |
 | Phone timing resolution | Shortcuts records whole seconds | thresholds above 3 s; flag sub-3 s accepts separately | coarse rubber-stamp measure until the native app |
 | Leakage through staging | a missing accept could hint at a seed | **all** decisions go to staging until the block closes | none known |
-| Single analyst | confirmation bias | pre-registration, fixed script, escrow, peer debriefer reads the joint display | interpretation still yours |
+| Single analyst | confirmation bias | pre-registration, fixed script, escrow, peer debriefer reads the joint display, independent coder for agreement | interpretation still yours |
+| Phone skews sampling | phone captures lean toward friction (context loss, handoff) | Check reports the balance of smooth, friction, breakthrough and baseline episodes per capture surface | a friction-heavy corpus in a phone-heavy period; stated |
 | Small n | wide intervals | report intervals, never bare rates | it is a pilot |
 
 ## One participant: what does and does not generalize

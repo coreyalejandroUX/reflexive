@@ -21,7 +21,10 @@ Outputs, per device and overall (JSON on stdout):
   rubber_stamp_rate   accepts faster than a minimum reading time / all accepts
   median_dwell_s      over decided, uninterrupted items
   stops               sessions ended by the stop rule or by choice
-Plus a randomization test of the phone-minus-desktop catch-rate difference.
+Plus a randomization test of the phone-minus-desktop catch-rate difference,
+and, if --items gives the review queue, catch rate by the agent's stated
+confidence (below 0.5, 0.5 and above, unknown): does the agent's confidence
+predict which planted errors get through?
 This is valid only because device was randomly assigned per item.
 
 Every rate comes with a 95% Wilson interval. With a pilot's numbers the
@@ -131,12 +134,28 @@ def randomization_test(seeded, iters, seed):
             "iters": iters}
 
 
+def confidence_band(c):
+    if not isinstance(c, (int, float)) or isinstance(c, bool):
+        return "unknown"
+    return "below_0.5" if c < 0.5 else "0.5_and_above"
+
+
+def by_confidence(decisions, key, items):
+    conf = {i["item_id"]: i.get("confidence", "unknown") for i in items}
+    seeded = [d for d in decisions if d["outcome"] in DECIDED and key[d["item_id"]]["seeded"]]
+    out = {}
+    for band in ("below_0.5", "0.5_and_above", "unknown"):
+        rows = [d for d in seeded if confidence_band(conf.get(d["item_id"])) == band]
+        out[band] = wilson(sum(d["outcome"] in FLAGGED for d in rows), len(rows))
+    return out
+
+
 def read_jsonl(path):
     with open(path, encoding="utf-8") as f:
         return [json.loads(line) for line in f if line.strip()]
 
 
-def run(decisions, key_rows, wps=8.0, iters=20000, seed=1, interrupt_s=120):
+def run(decisions, key_rows, wps=8.0, iters=20000, seed=1, interrupt_s=120, items=None):
     key = {r["item_id"]: r for r in key_rows}
     bad = {}
     for d in decisions:
@@ -153,6 +172,8 @@ def run(decisions, key_rows, wps=8.0, iters=20000, seed=1, interrupt_s=120):
         out[dev] = summarize([d for d in decisions if d["device"] == dev], key, wps, interrupt_s)
     seeded = [d for d in decisions if d["outcome"] in DECIDED and key[d["item_id"]]["seeded"]]
     out["device_test"] = randomization_test(seeded, iters, seed)
+    if items is not None:
+        out["catch_by_confidence"] = by_confidence(decisions, key, items)
     out["note"] = "Single participant. Within-person estimates, not population claims."
     return out
 
@@ -165,12 +186,14 @@ def main(argv=None) -> int:
                     help="fastest plausible reading speed, words per second (default 8)")
     ap.add_argument("--interrupt-s", type=float, default=120,
                     help="dwell above this many seconds counts as interrupted (default 120)")
+    ap.add_argument("--items", help="review queue (JSONL), for catch rate by agent confidence")
     ap.add_argument("--iters", type=int, default=20000)
     ap.add_argument("--seed", type=int, default=1)
     args = ap.parse_args(argv)
     try:
         result = run(read_jsonl(args.decisions), read_jsonl(args.seed_key),
-                     args.wps, args.iters, args.seed, args.interrupt_s)
+                     args.wps, args.iters, args.seed, args.interrupt_s,
+                     read_jsonl(args.items) if args.items else None)
     except ValueError as e:
         print(f"[!] {e}", file=sys.stderr)
         return 2

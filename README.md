@@ -23,10 +23,12 @@ study/
   seal.py               hidden seeding, commit-reveal
   review_desk.py        desktop review, logged
   measures.py           catch, escape, rubber-stamp
+  agreement.py          inter-reviewer agreement
   redteam/              24 attacks on 4 rules
 tools/
   fidelity_report.py    read-only label counts
-tests/                  58 tests (stdlib unittest)
+  capture_metrics.py    capture time, context loss
+tests/                  65 tests (stdlib unittest)
 docs/iphone/            the design, 1 file per part
 ```
 

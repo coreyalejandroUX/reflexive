@@ -8,10 +8,12 @@
 - Shared schema `schema/reflexive.schema.json` (x-version 1.1.0), with a Python reader, a TypeScript reader (Ajv 8.17.1), and 29 shared fixtures.
 - Read-only corpus report `tools/fidelity_report.py`.
 - `mobile/withdraw.py`: withdrawal with a hash-only record and a permanent block on re-ingest.
-- 58 Python unit tests and 29 TypeScript conformance tests.
+- `tools/capture_metrics.py` and `study/agreement.py` for the grant's capture and agreement metrics; catch rate by agent confidence in `measures.py`.
+- Corrected grant wording: docs/iphone/12_grant_wording.md.
+- 65 Python unit tests and 29 TypeScript conformance tests.
 
 ## VERIFIED AGAINST
-- All 58 Python tests pass on Python 3.13 (stdlib only).
+- All 65 Python tests pass on Python 3.13 (stdlib only).
 - All 29 TypeScript conformance tests pass (TypeScript 5.6.3, Node 22): same verdicts as Python on every shared fixture.
 - `ingest.py` was run from the command line on a synthetic envelope: PRESERVED, then DUPLICATE on replay.
 - `review_desk.py` was run with scripted input; its rows pass `measures.validate_decision`.
@@ -24,7 +26,8 @@
 - The Shortcuts recipes (Note, Check, Pause) are specified, not built or tested on a device. The home-network sync (Working Copy over SSH) is specified, not tested.
 - Withdrawal does not erase Git history; the tool prints that step, which has not been run anywhere. Offline dictation inside Shortcuts is unverified (a fallback is given).
 - No seeding environment exists yet. `seal.py` is its tested core.
-- No live-agent red-team run. No study data. No effect estimated.
+- No live-agent red-team run. No study data. No effect estimated. No metric has been computed on real data.
+- The no-training settings (ChatGPT data controls, API terms) have not been checked; the wording doc says to check them before claiming.
 - Nothing here has had ethics or IRB review or OSF registration.
 
 ## FUNCTIONAL STATUS

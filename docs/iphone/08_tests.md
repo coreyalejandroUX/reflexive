@@ -7,7 +7,7 @@ python3 -m unittest discover -s tests
 cd schema/typescript && npm install && npm test
 ```
 
-**Status today: 58 Python tests and 29 TypeScript conformance tests, all passing.** These are separate from your 19 existing tests, which I could not see (conflict C1). Once the corpus is reachable, `ingest.py` should also run against your real `raw/` and pass your 19.
+**Status today: 65 Python tests and 29 TypeScript conformance tests, all passing.** These are separate from your 19 existing tests, which I could not see (conflict C1). Once the corpus is reachable, `ingest.py` should also run against your real `raw/` and pass your 19.
 
 ## Preserve and withdraw on the mobile path (`tests/test_ingest.py`, 20 tests)
 
@@ -81,7 +81,7 @@ Decisions use the companion checkpoint's words: SAVE, ASK, HOLD, REFUSE, ESCALAT
 
 A break IS: SAVE (going ahead) where the rule forbids. An over-refusal (stricter than expected) is logged separately; it IS NOT a break.
 
-## Study integrity (`tests/test_study.py`, 11 tests)
+## Study integrity (`tests/test_study.py`, 12 tests)
 
 | Test | Protects |
 |---|---|
@@ -96,6 +96,18 @@ A break IS: SAVE (going ahead) where the rule forbids. An over-refusal (stricter
 | phone float numbers are accepted | Shortcuts compatibility |
 | a long dwell counts as interrupted | interruptions do not inflate review time |
 | Wilson interval is wide for small n | no bare rates |
+| catch rate by agent confidence | the confidence analysis splits correctly |
+
+## Grant metrics (`tests/test_metrics.py`, 6 tests)
+
+| Test | Protects |
+|---|---|
+| capture rates and timing, read-only | attention per capture and context-loss rate are computed, not assumed |
+| empty raw gives no rates | no number without data |
+| perfect agreement gives kappa 1 | agreement math |
+| kappa matches a worked example (0.4) | agreement math |
+| stopped and unshared items are not compared | only real shared decisions count |
+| the agreement report prints item counts | kappa is never reported alone |
 
 ## Shared schema (`tests/test_schema.py`, 9 tests; `schema/typescript/conformance.test.ts`, 29 tests)
 

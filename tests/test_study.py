@@ -95,5 +95,18 @@ class MeasureTests(unittest.TestCase):
         self.assertGreater(ci[1] - ci[0], 0.4)
 
 
+class ConfidenceTests(unittest.TestCase):
+    def test_catch_rate_by_agent_confidence(self):
+        key = [{"item_id": f"it{i}", "seeded": True, "seed_kind": "unsupported_claim"} for i in (1, 2, 3)]
+        decisions = [decision(1, "phone", "approve"), decision(2, "phone", "reject"),
+                     decision(3, "desktop", "hold")]
+        items = [{"item_id": "it1", "confidence": 0.9}, {"item_id": "it2", "confidence": 0.2},
+                 {"item_id": "it3", "confidence": "unknown"}]
+        out = measures.run(decisions, key, iters=10, items=items)["catch_by_confidence"]
+        self.assertEqual(out["0.5_and_above"]["rate"], 0.0)
+        self.assertEqual(out["below_0.5"]["rate"], 1.0)
+        self.assertEqual(out["unknown"]["n"], 1)
+
+
 if __name__ == "__main__":
     unittest.main()

@@ -21,7 +21,7 @@ Today is Monday, October 26. Each row is one deliverable. A row without a check-
 | **Oct 31 – Nov 10** | Normal life: capture whenever, review when able. Stop rule always on. Pause whenever. | No daily target. Coverage is measured, not demanded. |
 | **Sun Nov 8** | Halfway: run `measures.py` on **decision validity only**, with no key (catches broken logs early). Red-team run 2. | Logs valid. Run 2 logged. |
 | **Tue Nov 10** | Block closes at midnight. | No new seeded items. |
-| **Wed Nov 11** | Escrow decrypts the key. Verify the commitment. Run `measures.py`. Natural-escape audit (20 items). Re-review clean twins at the desk. Staging moves to derived. Debrief with the escrow person. | Measures JSON saved. Commitment verified. Staging empty. |
+| **Wed Nov 11** | Escrow decrypts the key. Verify the commitment. Run `measures.py`. Natural-escape audit (20 items), decided blind by you and by the independent coder (or the peer debriefer); run `study/agreement.py`. Run `tools/capture_metrics.py` on raw. Re-review clean twins at the desk. Staging moves to derived. Debrief with the escrow person. | Measures JSON saved. Commitment verified. Staging empty. |
 | **Thu Nov 12** | Pilot evidence packet (below). | Packet committed. |
 
 ## The November 12 pilot evidence packet
