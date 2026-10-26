@@ -16,3 +16,4 @@ One file per deliverable, so each one fits a bus ride. Read in order, or jump.
 | [09_risks.md](09_risks.md) | Bad days and failure modes, each with its fix |
 | [10_framing.md](10_framing.md) | Two framing paragraphs for you to rewrite |
 | [11_grant_vs_repository.md](11_grant_vs_repository.md) | Where the grant application and the repository disagree |
+| [12_grant_wording.md](12_grant_wording.md) | **Before the Generator application:** corrected wording for refusals and local-first |
