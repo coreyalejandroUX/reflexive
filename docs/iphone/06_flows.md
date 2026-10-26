@@ -55,9 +55,10 @@ These rules apply to every screen below:
  │       │
  │   SCREEN 2   Agent proposal
  │              (claim or code)
- │              Supported
- │              Not supported
- │              Not sure
+ │              Approve
+ │              Ask for narrower
+ │              Hold
+ │              Reject
  │              Stop for now
  │       │
  │   saved; next card,
@@ -71,19 +72,28 @@ These rules apply to every screen below:
 |---|---|---|
 | A, B | one tap each, or Skip | session context (covariates only) |
 | 1 | read the evidence, then Next | `presented_at` |
-| 2 | one decision | `decided_at`, `dwell_ms`, `outcome`, `device: phone` |
+| 2 | one decision | `decided_at`, `dwell_ms`, `outcome`, `device: phone`, `agent_action_id` |
 | End | nothing | session end and its reason |
 
-**What "Not sure" does.** It counts as a flag: the item goes to the desk and does not enter the analysis as accepted. Not sure is always a safe answer.
+These are the grant walkthrough's words, plus Reject:
 
-**What "Not supported" does.** The proposal is rejected. On the desk you may later say *why*. The phone never asks why.
+| Choice | Means | Stored as |
+|---|---|---|
+| Approve | the proposal is supported by the evidence | `approve` |
+| Ask for narrower | the idea may hold, but the claim says more than the evidence (the route for over-generalization) | `narrow` |
+| Hold | not enough to decide; gather more evidence first | `hold` |
+| Reject | the proposal is wrong, for example a wrong code | `reject` |
+
+**Hold is always a safe answer.** The card goes to the desk and does not count as approved.
+
+**After narrow or reject**, the desk is where you may say *why*. The phone never asks why.
 
 ## The stop rule
 
 The session ends itself on the first of these:
 - 10 cards;
 - 8 minutes;
-- 3 "Not sure" in a row;
+- 3 "Hold" in a row;
 - the same card opened twice in one day.
 
 The last two are the rumination signals: circling, re-checking, unable to settle. The end screen is the same no matter which rule ended the session. It never says which one, because naming it would make it a judgment. The reason is logged for the study.

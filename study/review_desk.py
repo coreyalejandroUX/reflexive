@@ -4,17 +4,19 @@ review_desk.py: the desktop side of Review (step 5), logged for the study.
 
 Shows one review item at a time, in the same two steps as the phone:
   1. the evidence, then Enter
-  2. the agent's claim, then one key: s supported, n not supported, u unsure, q stop
-and appends one decision per item to decisions.jsonl, in the same format the
-phone writes (see study/measures.py). Only items whose queue is "desktop" are
+  2. the agent's proposal, then one key:
+       a approve   n ask for a narrower statement   h hold   r reject   q stop
+and appends one decision per item to decisions.jsonl, in the shared-schema
+format ($defs/review_decision). Only items whose queue is "desktop" are
 shown, so device is the only thing that differs between the two paths.
+Items that do not match $defs/review_item are skipped and named.
 
 Stop rule (the same as on the phone): the session ends after 10 items,
-after 8 minutes, or after 3 "unsure" in a row. Ending is never an error.
+after 8 minutes, or after 3 "hold" in a row. Ending is never an error.
 
 Usage:
   python3 study/review_desk.py QUEUE.jsonl DECISIONS.jsonl
-Queue items: {"item_id", "queue", "evidence", "claim"}. Stdlib only.
+Stdlib only.
 """
 import json
 import sys
@@ -23,8 +25,11 @@ import uuid
 from datetime import datetime, timezone
 from pathlib import Path
 
-MAX_ITEMS, MAX_SECONDS, MAX_UNSURE_RUN = 10, 8 * 60, 3
-KEYS = {"s": "supported", "n": "not_supported", "u": "unsure", "q": "stopped"}
+sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "schema"))
+from reflexive_schema import validate  # noqa: E402
+
+MAX_ITEMS, MAX_SECONDS, MAX_HOLD_RUN = 10, 8 * 60, 3
+KEYS = {"a": "approve", "n": "narrow", "h": "hold", "r": "reject", "q": "stopped"}
 
 
 def now_iso():
@@ -40,7 +45,14 @@ def pending(queue_path, decisions_path):
         done = {r["item_id"] for r in rows if r["outcome"] != "stopped"}
     with open(queue_path, encoding="utf-8") as f:
         items = [json.loads(line) for line in f if line.strip()]
-    return [i for i in items if i.get("queue") == "desktop" and i["item_id"] not in done]
+    ready = []
+    for item in items:
+        problems = validate(item, "review_item")
+        if problems:
+            print(f"[skip] {item.get('item_id', '?')}: {problems}", file=sys.stderr)
+        elif item["queue"] == "desktop" and item["item_id"] not in done:
+            ready.append(item)
+    return ready
 
 
 def ask(prompt, allowed):
@@ -57,28 +69,28 @@ def main(argv=None) -> int:
         return 2
     queue_path, decisions_path = argv
     session = f"desk-{uuid.uuid4().hex[:8]}"
-    started, unsure_run, count = time.monotonic(), 0, 0
+    started, hold_run, count = time.monotonic(), 0, 0
 
     for item in pending(queue_path, decisions_path):
-        if count >= MAX_ITEMS or time.monotonic() - started > MAX_SECONDS or unsure_run >= MAX_UNSURE_RUN:
+        if count >= MAX_ITEMS or time.monotonic() - started > MAX_SECONDS or hold_run >= MAX_HOLD_RUN:
             break
         presented_at, t0 = now_iso(), time.monotonic()
         print("\nEvidence:\n" + item["evidence"])
-        input("\n[Enter] to see the claim ")
-        print("\nClaim:\n" + item["claim"])
-        key = ask("\nSupported by the evidence?  s / n / u   (q to stop): ", KEYS)
+        input("\n[Enter] to see the agent's proposal ")
+        print("\nAgent proposal:\n" + item["claim"])
+        key = ask("\na approve · n narrower · h hold · r reject   (q to stop): ", KEYS)
         outcome = KEYS[key]
         row = {"decision_id": uuid.uuid4().hex, "session_id": session, "item_id": item["item_id"],
-               "device": "desktop", "presented_at": presented_at, "decided_at": now_iso(),
+               "agent_action_id": item["agent_action_id"], "device": "desktop",
+               "presented_at": presented_at, "decided_at": now_iso(),
                "dwell_ms": int((time.monotonic() - t0) * 1000), "outcome": outcome,
-               "item_words": len((item["evidence"] + " " + item["claim"]).split()),
-               "interrupted": False}
+               "item_words": item["item_words"], "interrupted": False}
         with open(decisions_path, "a", encoding="utf-8") as f:
             f.write(json.dumps(row) + "\n")
         if outcome == "stopped":
             break
         count += 1
-        unsure_run = unsure_run + 1 if outcome == "unsure" else 0
+        hold_run = hold_run + 1 if outcome == "hold" else 0
 
     print("\nSaved. Review is closed for now.")
     return 0

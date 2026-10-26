@@ -27,6 +27,14 @@ Each concept gets two lines. Other files link here instead of re-explaining.
 - IS: replacing known names with pseudonyms (for example "Peer A") on the phone, before anything is saved or synced.
 - IS NOT: a full privacy guarantee. It catches names you have listed. The desktop check is a second net, and Export runs a third check.
 
+**Use boundary**
+- IS: who may use a record: private research only, de-identified study record, public release requested, or not sure yet. The phone can only set the first or the last.
+- IS NOT: consent itself. It records the decision; widening it is a separate desk decision, and public release still goes through ESCALATE.
+
+**Withdrawal**
+- IS: the one sanctioned way to remove a capture. The file is deleted, its hash and a reason code are kept, and ingest refuses that capture forever after.
+- IS NOT: erasure from Git history. That is a separate step the tool prints, and it must be run on purpose.
+
 **Derived staging**
 - IS: a holding area for review decisions made during a study block. They move into the derived layer only after unblinding.
 - IS NOT: hidden data. You can see it. It is simply not used by Synthesize or Export until the block closes.
@@ -54,7 +62,7 @@ Each concept gets two lines. Other files link here instead of re-explaining.
 - IS NOT: not knowing seeding exists. You consented to it and know the rate range (10–25%).
 
 **Catch rate**
-- IS: of the seeded items you decided, the share you marked "not supported" or "not sure".
+- IS: of the seeded items you decided, the share you did not approve (ask for narrower, hold, or reject).
 - IS NOT: a personal score. It measures the review interface under conditions. That is the point of the study.
 
 **Rubber-stamping**
@@ -62,7 +70,7 @@ Each concept gets two lines. Other files link here instead of re-explaining.
 - IS NOT: every fast accept being wrong. It is a behavioral flag, checked against catch rate.
 
 **Unsupported-claim escape rate**
-- IS: the share of seeded unsupported claims you accepted. These are the errors that would have entered the analysis.
+- IS: the share of seeded unsupported claims you approved. These are the errors that would have entered the analysis.
 - IS NOT: the same as 1 minus catch rate. That covers wrong codes too.
 
 **Refusal rule and red-teaming**
@@ -88,7 +96,7 @@ Each concept gets two lines. Other files link here instead of re-explaining.
 - IS NOT: symptom tracking, diagnosis, or a mood score. It never uses clinical words and is never required.
 
 **Stop rule**
-- IS: the session ending on its own after 10 items, 8 minutes, or 3 "not sure" in a row, so review cannot turn into rumination.
+- IS: the session ending on its own after 10 items, 8 minutes, or 3 "hold" in a row, so review cannot turn into rumination.
 - IS NOT: a failure or a penalty. Stopping is logged as data, and the rest waits.
 
 **Single-case design**

@@ -21,7 +21,7 @@ class RedTeamSuiteTests(unittest.TestCase):
         ids = [p["id"] for p in self.prompts]
         self.assertEqual(len(ids), len(set(ids)))
         for p in self.prompts:
-            self.assertIn(p["expected"], {"HOLD", "REFUSE", "ESCALATE"})
+            self.assertIn(p["expected"], {"ASK", "HOLD", "REFUSE", "ESCALATE"})
             self.assertIn(p["gate"], {"structural", "agent"})
 
     def test_structural_attacks_do_not_break(self):
@@ -32,7 +32,7 @@ class RedTeamSuiteTests(unittest.TestCase):
                     self.assertEqual(run_redteam.outcome(p["expected"], actual), "held")
 
     def test_unparseable_agent_reply_counts_as_break(self):
-        self.assertEqual(run_redteam.outcome("REFUSE", "ALLOW"), "BREAK")
+        self.assertEqual(run_redteam.outcome("REFUSE", "SAVE"), "BREAK")
 
 
 if __name__ == "__main__":

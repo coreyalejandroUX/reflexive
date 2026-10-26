@@ -22,10 +22,12 @@ export const schema = JSON.parse(readFileSync(findUp("reflexive.schema.json"), "
 
 const ajv = new Ajv2020.default({ allErrors: true });
 // x-* keys are Reflexive annotations, not validation keywords.
-ajv.addVocabulary(["x-version", "x-corpus-schema", "x-status", "x-allowed-fidelity"]);
+ajv.addVocabulary(["x-version", "x-corpus-schema", "x-changelog", "x-status", "x-display",
+                   "x-allowed-fidelity", "x-allowed-from-phone"]);
 ajv.addSchema(schema);
 
-export type DefName = "mobile_envelope" | "review_item" | "review_decision";
+export type DefName = "mobile_envelope" | "mobile_envelope_0_1" | "withdrawal" |
+                      "review_item" | "review_decision";
 
 export function validate(doc: unknown, def: DefName): string[] {
   const check = ajv.getSchema(`${schema.$id}#/$defs/${def}`);
@@ -35,4 +37,9 @@ export function validate(doc: unknown, def: DefName): string[] {
 
 export function enumOf(def: string): string[] {
   return [...schema.$defs[def].enum];
+}
+
+// Human-facing text for a stored value, e.g. display("support_strength", "no_source").
+export function display(def: string, value: string): string {
+  return schema.$defs[def]["x-display"]?.[value] ?? value;
 }

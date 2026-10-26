@@ -5,7 +5,8 @@ Three namespaces. Keeping them apart is how seeding stays out of the corpus.
 All three are defined in **one file**, `schema/reflexive.schema.json`. That file is the single source of truth. The Python kit reads it through `schema/reflexive_schema.py`, and the TypeScript workspace reads it through `schema/typescript/validate.ts` (Ajv). Both must give the same verdict on every case in `schema/fixtures.json`. Each side has a test for that.
 
 ```
- ENVELOPE 0.1      phone → inbox
+ ENVELOPE 0.2      phone → inbox
+ (0.1 frozen,      still accepted)
  ($defs/mobile_envelope)
         │ ingest.py
         ▼
@@ -20,7 +21,37 @@ All three are defined in **one file**, `schema/reflexive.schema.json`. That file
 - The envelope IS: the phone's transport format, deliberately tiny. It IS NOT: a schema 2.1 record. The Structure step makes records from raw.
 - Study 1.0 IS: the oversight experiment's own data. It IS NOT: part of the corpus, so it can never be released by Export.
 
-## Envelope 0.1 → schema 2.1
+## Envelope 0.2 (current)
+
+Shared schema 1.1.0 adds two required fields to what the phone writes. Envelope 0.1 stays valid and frozen (`$defs/mobile_envelope_0_1`), so nothing already captured is lost.
+
+| New field | Values | Why |
+|---|---|---|
+| `boundary` | `private_research_only` or `unclear` from the phone; the desk may widen to `deidentified_study_record` or `public_release_requested` | Who may use the record. This is the companion checkpoint's use boundary. Narrowest by default, widened only with attention. |
+| `capture_seconds` | number | Time from pressing the button to saving. It measures the 10-second target and the grant's attention-per-capture metric. |
+
+## Envelope → schema 2.1 (companion checkpoint field names)
+
+The companion checkpoint builds a record named `reflexive-checkpoint/2.1`. Its field names are the best evidence of schema 2.1 I can reach. They are still a demo, so each needs confirming against the corpus.
+
+| Envelope field | Checkpoint 2.1 field | Confirm |
+|---|---|---|
+| `capture_id` | `id` (format `RF-YYYYMMDD-NNNN`) | whether the corpus uses the RF format; mobile ids keep their own `m-` form and link to it |
+| `captured_at` | `captured_at` | timezone convention |
+| `minutes_since_event` | `event_time` ("Not established by this capture" when unknown) | how unknown is written |
+| `text` | `event` | |
+| (Structure proposes) | `impact` (Friction / Breakdown / Breakthrough / Neutral observation) | the phone does not ask; see "Sampling balance" below |
+| `attachment_file` | `evidence` (list of source kinds) | |
+| `fidelity` | `fidelity` | **conflict:** the checkpoint stores support strength here (proposal P7) |
+| `boundary` | `boundary` | display text vs stored value (`x-display` in the shared schema) |
+| (absent) app, URL, task | `context` | stays "Context not recorded" from the phone |
+| `text_sha256` | `sha256` | the checkpoint hashes event plus context, not text alone |
+| (gate result) | `route`, `route_reason` | same words now: SAVE / ASK / HOLD / REFUSE / ESCALATE |
+| (policy version) | `rule_set` | |
+
+**Sampling balance.** Phone captures lean toward friction (context loss, handoff). The phone does not ask for an impact label, because that would break the 10-second budget. Structure proposes `impact`, and Check reports the balance of smooth, friction, breakthrough and baseline episodes **separately for each capture surface**, so a phone-heavy week shows up as skew rather than as a finding.
+
+## Envelope 0.1 → schema 2.1 (earlier mapping)
 
 I could not read schema 2.1 (conflict C1), so every field name on the right must be **confirmed** against your schema file before Structure maps automatically.
 
@@ -72,7 +103,7 @@ The grant and the companion checkpoint use the word "fidelity" for two different
 - `fidelity` IS: a fact about the capture event, fixed at Preserve. It IS NOT: a rating of how trustworthy the content is.
 - `support` IS: a revisable judgment of how many independent sources back the record. It IS NOT: stored in raw, and it IS NOT written back into any existing capture.
 - `corroborated`: two or more independent source kinds (for example transcript plus screenshot). `documented`: at least one source. `no_source`: nothing attached. `unknown`: not yet checked.
-- **Naming decision for you:** the checkpoint shows `no_source` as "Reconstruction only". In storage I propose `no_source`, because a user-supplied account with nothing attached is not a reconstruction. The display text can stay as it is.
+- **Decided (October 26):** the stored value is `no_source`, displayed as "Reconstruction only". A user-supplied account with nothing attached is not a reconstruction, so storage keeps the two apart. The display mapping lives in the shared schema (`x-display`), so both the Python kit and the TypeScript workspace show the same text.
 
 **Migration note (P7):**
 1. **No existing capture is rewritten or relabeled.** All 68 stay byte-identical, and the raw manifest proves it.
@@ -94,16 +125,27 @@ evidence    ≤ 60 words, from the evidence layer
 claim       the agent's proposal (claim or code)
 item_words  word count of evidence + claim
 record_ref  the 2.1 record it is about
+agent_action_id  the agent action that
+                 proposed it (PROV join)
+model            which model proposed it
+policy_version   which rule set applied
+confidence       0–1, or "unknown"
 ```
+
+The last four come from the application's provenance promise: every action logs its input, policy version, model, output, confidence and the human's decision. They also let the study ask whether the agent's stated confidence predicts which errors escape.
 
 **Decision** (`study/decisions/...`, validated by `measures.validate_decision`):
 
 ```
 decision_id   session_id    item_id
-device        presented_at  decided_at
-dwell_ms      outcome       item_words
-interrupted
+agent_action_id               device
+presented_at  decided_at    dwell_ms
+outcome       item_words    interrupted
 ```
+
+`outcome` is one of `approve`, `narrow`, `hold`, `reject`, `stopped`.
+
+**Withdrawal** (`raw/mobile/WITHDRAWN.jsonl`, `$defs/withdrawal`): `capture_id`, `sha256`, `withdrawn_at`, and a `reason` code (`participant_choice`, `consent_change`, `identity_risk`, `other`). It holds no content and no free text.
 
 **Session** (one per review session):
 
@@ -112,7 +154,7 @@ session_id  device   started_at  ended_at
 end_reason  energy   setting     paused
 ```
 
-`end_reason` is one of: items, time, unsure_run, reopen, chosen. Energy and setting may be `skip`.
+`end_reason` is one of: items, time, hold_run, reopen, chosen. Energy and setting may be `skip`.
 
 **Sealed key row** (encrypted, escrow only): `item_id`, `seeded`, `seed_kind`, `device`.
 

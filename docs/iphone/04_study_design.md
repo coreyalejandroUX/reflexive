@@ -101,9 +101,9 @@ All are computed by `study/measures.py`. The script is fixed before unblinding, 
 
 | Measure | Definition |
 |---|---|
-| Catch rate (primary) | seeded items marked not supported or unsure ÷ seeded items decided |
-| Catch rate, strict | seeded items marked not supported ÷ seeded items decided |
-| Escape rate | seeded unsupported claims accepted ÷ seeded unsupported claims decided |
+| Catch rate (primary) | seeded items not approved (narrow, hold or reject) ÷ seeded items decided |
+| Catch rate, strict | seeded items actively corrected (narrow or reject) ÷ seeded items decided |
+| Escape rate | seeded unsupported claims approved ÷ seeded unsupported claims decided |
 | False-flag rate | clean items flagged ÷ clean items decided |
 | Rubber-stamp rate | accepts faster than 1 s per 8 words ÷ all accepts |
 | Review time | median dwell, excluding interrupted items (any dwell over 120 s counts as interrupted) |

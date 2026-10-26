@@ -26,6 +26,17 @@ class SchemaTests(unittest.TestCase):
         envelope_fields = rs.definition("mobile_envelope")["properties"]
         self.assertNotIn("support", envelope_fields)
 
+    def test_no_source_displays_as_reconstruction_only(self):
+        self.assertEqual(rs.display("support_strength", "no_source"), "Reconstruction only")
+
+    def test_phone_boundaries_are_the_narrowest_real_values(self):
+        allowed = rs.definition("use_boundary")["x-allowed-from-phone"]
+        self.assertEqual(set(allowed), {"private_research_only", "unclear"})
+        self.assertTrue(set(allowed) <= set(rs.enum("use_boundary")))
+
+    def test_route_words_match_the_companion_checkpoint(self):
+        self.assertEqual(set(rs.enum("route_decision")), {"SAVE", "ASK", "HOLD", "REFUSE", "ESCALATE"})
+
     def test_policy_gate_ranks_exactly_the_schema_labels(self):
         self.assertEqual(set(FIDELITY_RANK), set(rs.enum("fidelity")))
 

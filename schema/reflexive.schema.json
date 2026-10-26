@@ -3,17 +3,38 @@
   "$id": "https://github.com/coreyalejandroUX/reflexive/schema/reflexive.schema.json",
   "title": "Reflexive shared schema",
   "description": "Single source of truth for the formats the Python research kit and the TypeScript workspace exchange. Both validate against this file. Change it only by a versioned proposal (docs/iphone/07_schema.md). x-* keys are Reflexive annotations; validators register them as a vocabulary.",
-  "x-version": "1.0.0",
+  "x-version": "1.1.0",
   "x-corpus-schema": "2.1",
+  "x-changelog": [
+    "1.0.0 2026-10-26 first shared schema",
+    "1.1.0 2026-10-26 envelope 0.2 (use boundary, capture_seconds); route words SAVE/ASK; review outcomes approve/narrow/hold/reject; provenance fields on review items and decisions; withdrawal record; no_source accepted with display text"
+  ],
   "$defs": {
     "fidelity": {
       "description": "HOW the content was captured. The four labels from the grant application. Unchanged from corpus schema 2.1.",
       "enum": ["direct", "user-supplied", "transcription", "reconstruction"]
     },
     "support_strength": {
-      "description": "HOW WELL the record is supported by attached sources. PROPOSED for corpus schema 2.2 (proposal P7), not adopted. Computed in the derived layer, never written into existing records. The companion checkpoint shows these as Corroborated / Documented / Reconstruction only; 'Reconstruction only' becomes no_source so it is not confused with the fidelity label 'reconstruction'.",
+      "description": "HOW WELL the record is supported by attached sources. PROPOSED for corpus schema 2.2 (proposal P7), not adopted. Computed in the derived layer, never written into existing records. Stored value no_source (accepted 2026-10-26) displays as 'Reconstruction only'.",
       "x-status": "proposed",
-      "enum": ["corroborated", "documented", "no_source", "unknown"]
+      "enum": ["corroborated", "documented", "no_source", "unknown"],
+      "x-display": {
+        "corroborated": "Corroborated",
+        "documented": "Documented",
+        "no_source": "Reconstruction only",
+        "unknown": "Not yet checked"
+      }
+    },
+    "use_boundary": {
+      "description": "Who may use this record. From the companion checkpoint. The phone may only set the two narrowest values; widening happens at the desk.",
+      "enum": ["private_research_only", "deidentified_study_record", "public_release_requested", "unclear"],
+      "x-display": {
+        "private_research_only": "Private research only",
+        "deidentified_study_record": "De-identified study record",
+        "public_release_requested": "Public release requested",
+        "unclear": "I am not sure yet"
+      },
+      "x-allowed-from-phone": ["private_research_only", "unclear"]
     },
     "capture_type": {
       "enum": ["moment", "context_loss", "handoff", "marker"]
@@ -22,17 +43,63 @@
       "enum": ["dictation", "typed", "none"]
     },
     "route_decision": {
-      "enum": ["ALLOW", "HOLD", "REFUSE", "ESCALATE"]
+      "description": "Words shared with the companion checkpoint. SAVE = may proceed. ASK = name or attach a source first. HOLD = stop until a person resolves it. REFUSE = never. ESCALATE = a person must make a specific decision, at the desk.",
+      "enum": ["SAVE", "ASK", "HOLD", "REFUSE", "ESCALATE"]
     },
     "device": {
       "enum": ["phone", "desktop"]
+    },
+    "review_outcome": {
+      "description": "Words from the grant walkthrough, plus reject. approve = accept the proposal. narrow = ask for a narrower statement. hold = gather more evidence first. reject = the proposal is wrong. stopped = session ended before deciding.",
+      "enum": ["approve", "narrow", "hold", "reject", "stopped"]
     },
     "sha256": {
       "type": "string",
       "pattern": "^[0-9a-f]{64}$"
     },
+    "confidence": {
+      "oneOf": [{ "type": "number", "minimum": 0, "maximum": 1 }, { "const": "unknown" }]
+    },
     "mobile_envelope": {
-      "description": "What the iPhone writes into the transit inbox (envelope 0.1). Not a corpus record; ingest preserves it into raw. Study and seeding fields are forbidden here.",
+      "description": "Current phone capture format (envelope 0.2). Written into the transit inbox; ingest preserves it into raw. Not a corpus record. Study and seeding fields are forbidden here.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["envelope_version", "capture_id", "captured_at", "device", "capture_type", "fidelity", "text", "text_method", "text_sha256", "boundary", "capture_seconds"],
+      "properties": {
+        "envelope_version": { "const": "0.2" },
+        "capture_id": { "type": "string", "pattern": "^m-[0-9]{8}T[0-9]{6}Z?-[A-Za-z0-9]{4,12}$" },
+        "captured_at": { "type": "string", "minLength": 10 },
+        "device": { "const": "iphone" },
+        "capture_type": { "$ref": "#/$defs/capture_type" },
+        "fidelity": { "$ref": "#/$defs/fidelity" },
+        "text": { "type": "string" },
+        "text_method": { "$ref": "#/$defs/text_method" },
+        "text_sha256": { "$ref": "#/$defs/sha256" },
+        "boundary": { "$ref": "#/$defs/use_boundary" },
+        "capture_seconds": { "type": "number", "minimum": 0 },
+        "attachment_file": { "type": "string", "minLength": 1 },
+        "attachment_sha256": { "$ref": "#/$defs/sha256" },
+        "minutes_since_event": {
+          "oneOf": [{ "type": "number", "minimum": 0 }, { "const": "unknown" }]
+        },
+        "deid": {
+          "type": "object",
+          "additionalProperties": false,
+          "properties": {
+            "method": { "enum": ["watchlist", "none"] },
+            "replacements": { "type": "integer", "minimum": 0 }
+          }
+        }
+      },
+      "x-allowed-fidelity": {
+        "moment": ["user-supplied", "reconstruction", "direct"],
+        "context_loss": ["user-supplied", "reconstruction"],
+        "handoff": ["user-supplied", "reconstruction"],
+        "marker": ["user-supplied"]
+      }
+    },
+    "mobile_envelope_0_1": {
+      "description": "Frozen. Envelope 0.1, still accepted so nothing already captured is lost. No use boundary: Check treats it as unclear.",
       "type": "object",
       "additionalProperties": false,
       "required": ["envelope_version", "capture_id", "captured_at", "device", "capture_type", "fidelity", "text", "text_method", "text_sha256"],
@@ -59,41 +126,52 @@
             "replacements": { "type": "integer", "minimum": 0 }
           }
         }
-      },
-      "x-allowed-fidelity": {
-        "moment": ["user-supplied", "reconstruction", "direct"],
-        "context_loss": ["user-supplied", "reconstruction"],
-        "handoff": ["user-supplied", "reconstruction"],
-        "marker": ["user-supplied"]
+      }
+    },
+    "withdrawal": {
+      "description": "One line in raw/.../WITHDRAWN.jsonl. Records that a capture was deliberately removed. Holds the hash, never the content, and no free-text reason.",
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["capture_id", "sha256", "withdrawn_at", "reason"],
+      "properties": {
+        "capture_id": { "type": "string", "minLength": 1 },
+        "sha256": { "$ref": "#/$defs/sha256" },
+        "withdrawn_at": { "type": "string", "minLength": 10 },
+        "reason": { "enum": ["participant_choice", "consent_change", "identity_risk", "other"] }
       }
     },
     "review_item": {
-      "description": "One card in a review queue (study 1.0). Looks the same whether seeded or not.",
+      "description": "One card in a review queue (study 1.0). Looks the same whether seeded or not. Provenance fields join it to the agent action that proposed it.",
       "type": "object",
       "additionalProperties": false,
-      "required": ["item_id", "queue", "evidence", "claim", "item_words"],
+      "required": ["item_id", "queue", "evidence", "claim", "item_words", "agent_action_id", "model", "policy_version", "confidence"],
       "properties": {
         "item_id": { "type": "string", "minLength": 1 },
         "queue": { "$ref": "#/$defs/device" },
         "evidence": { "type": "string" },
         "claim": { "type": "string" },
         "item_words": { "type": "number", "minimum": 0 },
-        "record_ref": { "type": "string" }
+        "record_ref": { "type": "string" },
+        "agent_action_id": { "type": "string", "minLength": 1 },
+        "model": { "type": "string", "minLength": 1 },
+        "policy_version": { "type": "string", "minLength": 1 },
+        "confidence": { "$ref": "#/$defs/confidence" }
       }
     },
     "review_decision": {
       "description": "One human review decision (study 1.0). Written by the phone shortcut and by study/review_desk.py.",
       "type": "object",
-      "required": ["decision_id", "session_id", "item_id", "device", "presented_at", "decided_at", "dwell_ms", "outcome", "item_words", "interrupted"],
+      "required": ["decision_id", "session_id", "item_id", "agent_action_id", "device", "presented_at", "decided_at", "dwell_ms", "outcome", "item_words", "interrupted"],
       "properties": {
         "decision_id": { "type": "string" },
         "session_id": { "type": "string" },
         "item_id": { "type": "string" },
+        "agent_action_id": { "type": "string" },
         "device": { "$ref": "#/$defs/device" },
         "presented_at": { "type": "string" },
         "decided_at": { "type": "string" },
         "dwell_ms": { "type": "number", "minimum": 0 },
-        "outcome": { "enum": ["supported", "not_supported", "unsure", "stopped"] },
+        "outcome": { "$ref": "#/$defs/review_outcome" },
         "item_words": { "type": "number", "minimum": 0 },
         "interrupted": { "type": "boolean" }
       }

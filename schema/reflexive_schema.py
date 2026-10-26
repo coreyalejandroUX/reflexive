@@ -4,7 +4,7 @@ reflexive_schema.py: the Python kit's reader for schema/reflexive.schema.json.
 
 That JSON file is the single source of truth. This module loads it and checks
 documents against one of its $defs, using only the JSON Schema keywords the
-file actually uses: type, const, enum, pattern, minLength, minimum, required,
+file actually uses: type, const, enum, pattern, minLength, minimum, maximum, required,
 properties, additionalProperties (false), oneOf, $ref (local). Any other
 keyword makes validation fail loudly instead of passing silently, so the
 schema cannot quietly outgrow this reader. The TypeScript workspace validates
@@ -23,7 +23,7 @@ SCHEMA_PATH = Path(__file__).resolve().parent / "reflexive.schema.json"
 SCHEMA = json.loads(SCHEMA_PATH.read_text(encoding="utf-8"))
 
 # Keywords this reader implements, plus annotations it may safely ignore.
-HANDLED = {"type", "const", "enum", "pattern", "minLength", "minimum", "required",
+HANDLED = {"type", "const", "enum", "pattern", "minLength", "minimum", "maximum", "required",
            "properties", "additionalProperties", "oneOf", "$ref"}
 IGNORED = {"description", "title", "$comment"}
 
@@ -45,6 +45,11 @@ def definition(name: str) -> dict:
 def enum(name: str) -> list:
     """The allowed values of an enum $def, e.g. enum("fidelity")."""
     return list(definition(name)["enum"])
+
+
+def display(name: str, value: str) -> str:
+    """Human-facing text for a stored value, e.g. display("support_strength", "no_source")."""
+    return definition(name).get("x-display", {}).get(value, value)
 
 
 def _check(value, node, path, errors):
@@ -70,6 +75,8 @@ def _check(value, node, path, errors):
         errors.append(f"{path or '/'}: too short")
     if "minimum" in node and TYPES["number"](value) and value < node["minimum"]:
         errors.append(f"{path or '/'}: must be >= {node['minimum']}")
+    if "maximum" in node and TYPES["number"](value) and value > node["maximum"]:
+        errors.append(f"{path or '/'}: must be <= {node['maximum']}")
     if "oneOf" in node:
         passing = 0
         for option in node["oneOf"]:

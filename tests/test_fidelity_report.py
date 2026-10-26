@@ -1,4 +1,6 @@
 """The corpus fidelity report reads, counts, and never relabels."""
+import contextlib
+import io
 import json
 import tempfile
 import unittest
@@ -41,7 +43,8 @@ class FidelityReportTests(unittest.TestCase):
 
     def test_never_modifies_the_corpus(self):
         before = tree_hash(self.corpus)
-        fidelity_report.main([str(self.corpus), "--expect", "68"])
+        with contextlib.redirect_stdout(io.StringIO()):
+            fidelity_report.main([str(self.corpus), "--expect", "68"])
         self.assertEqual(tree_hash(self.corpus), before)
 
 

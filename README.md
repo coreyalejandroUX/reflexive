@@ -17,6 +17,7 @@ schema/
   fixtures.json         cases both must agree on
 mobile/
   ingest.py             inbox → raw: the only door
+  withdraw.py           the one sanctioned removal
   policy_gate.py        deterministic refusals
 study/
   seal.py               hidden seeding, commit-reveal
@@ -25,7 +26,7 @@ study/
   redteam/              24 attacks on 4 rules
 tools/
   fidelity_report.py    read-only label counts
-tests/                  45 tests (stdlib unittest)
+tests/                  58 tests (stdlib unittest)
 docs/iphone/            the design, 1 file per part
 ```
 

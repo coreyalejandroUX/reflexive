@@ -10,6 +10,7 @@ SECRET = b"x" * 48
 
 def decision(i, device, outcome, dwell_ms=9000, words=30, interrupted=False):
     return {"decision_id": f"d{i}", "session_id": "s1", "item_id": f"it{i}",
+            "agent_action_id": f"act{i}",
             "device": device, "presented_at": "2026-11-03T08:00:00-06:00",
             "decided_at": "2026-11-03T08:00:09-06:00", "dwell_ms": dwell_ms,
             "outcome": outcome, "item_words": words, "interrupted": interrupted}
@@ -52,11 +53,11 @@ class MeasureTests(unittest.TestCase):
             {"item_id": "it6", "seeded": False, "seed_kind": None},
         ]
         self.decisions = [
-            decision(1, "phone", "supported", dwell_ms=1200),    # escape, rubber stamp
-            decision(2, "phone", "unsure"),                       # caught (lenient)
-            decision(3, "desktop", "not_supported"),              # caught
-            decision(4, "desktop", "not_supported"),              # caught
-            decision(5, "phone", "supported"),                    # clean accept
+            decision(1, "phone", "approve", dwell_ms=1200),      # escape, rubber stamp
+            decision(2, "phone", "hold"),                         # caught (lenient)
+            decision(3, "desktop", "reject"),                     # caught
+            decision(4, "desktop", "narrow"),                     # caught
+            decision(5, "phone", "approve"),                      # clean accept
             decision(6, "desktop", "stopped"),                    # stop rule
         ]
 

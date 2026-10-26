@@ -11,7 +11,7 @@ for sub in ("schema", "mobile", "study", "study/redteam", "tools"):
 def envelope(**overrides):
     text = overrides.pop("text", "Lost the tutor chat after opening the bus ticket.")
     env = {
-        "envelope_version": "0.1",
+        "envelope_version": "0.2",
         "capture_id": "m-20261027T081512Z-a1b2",
         "captured_at": "2026-10-27T08:15:12-05:00",
         "device": "iphone",
@@ -20,6 +20,8 @@ def envelope(**overrides):
         "text": text,
         "text_method": "dictation",
         "text_sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        "boundary": "private_research_only",
+        "capture_seconds": 8.4,
     }
     env.update(overrides)
     return env

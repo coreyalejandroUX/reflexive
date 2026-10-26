@@ -20,6 +20,8 @@ $defs/mobile_envelope). Rules enforced here (see docs/iphone/08_tests.md):
   - the fidelity label must be allowed for the capture type
   - study or seeding fields may never appear in a raw envelope (-> REFUSE)
   - a watchlist name in the text means de-identification failed (-> HOLD)
+  - the phone may only set the narrowest use boundaries (-> HOLD otherwise)
+  - a withdrawn capture can never be preserved again, even by offline replay
 
 Usage:
     python3 mobile/ingest.py --inbox PATH --raw PATH [--watchlist FILE] [--dry-run]
@@ -41,6 +43,8 @@ from reflexive_schema import definition, validate  # noqa: E402
 # voice or typed account is user-supplied; rebuilding lost content from memory
 # is a reconstruction; "direct" needs an attached source file.
 ALLOWED_FIDELITY = {k: set(v) for k, v in definition("mobile_envelope")["x-allowed-fidelity"].items()}
+BOUNDARY_FROM_PHONE = set(definition("use_boundary")["x-allowed-from-phone"])
+ENVELOPE_DEFS = {"0.2": "mobile_envelope", "0.1": "mobile_envelope_0_1"}
 
 # Any key that smells like the oversight study. Seeding lives in study/, never raw.
 FORBIDDEN_KEY = re.compile(r"seed|sealed|planted|study|experiment", re.IGNORECASE)
@@ -77,13 +81,18 @@ def check(env: dict, inbox: Path, watchlist):
     if bad:
         return "REFUSE", f"study field(s) {sorted(set(bad))} may not enter raw"
 
-    problems = validate(env, "mobile_envelope")
+    def_name = ENVELOPE_DEFS.get(env.get("envelope_version"))
+    if def_name is None:
+        return "HOLD", f"envelope_version {env.get('envelope_version')!r} is not supported"
+    problems = validate(env, def_name)
     if problems:
         hint = "; propose a schema change first" if any("unknown field" in p for p in problems) else ""
         return "HOLD", "does not match the shared schema: " + "; ".join(problems) + hint
     if env["fidelity"] not in ALLOWED_FIDELITY[env["capture_type"]]:
         return "HOLD", (f"fidelity {env['fidelity']!r} is not allowed for "
                         f"{env['capture_type']!r} captures")
+    if "boundary" in env and env["boundary"] not in BOUNDARY_FROM_PHONE:
+        return "HOLD", "the phone cannot widen the use boundary; widen it at the desk"
     if env["capture_type"] == "marker" and env["text"].strip():
         return "HOLD", "a marker carries no text; save it as a moment instead"
     if env["fidelity"] == "direct" and "attachment_file" not in env:
@@ -108,6 +117,14 @@ def check(env: dict, inbox: Path, watchlist):
     return None, ""
 
 
+def withdrawn_ids(raw_dir: Path):
+    path = raw_dir / "WITHDRAWN.jsonl"
+    if not path.exists():
+        return set()
+    with open(path, encoding="utf-8") as f:
+        return {json.loads(line)["capture_id"] for line in f if line.strip()}
+
+
 def preserve(env_path: Path, raw_dir: Path, inbox: Path, watchlist, dry_run=False):
     data = env_path.read_bytes()
     try:
@@ -120,6 +137,9 @@ def preserve(env_path: Path, raw_dir: Path, inbox: Path, watchlist, dry_run=Fals
     decision, reason = check(env, inbox, watchlist)
     if decision:
         return decision, reason
+
+    if env["capture_id"] in withdrawn_ids(raw_dir):
+        return "REFUSE", "this capture was withdrawn; a replay cannot bring it back"
 
     target = raw_dir / f"{env['capture_id']}.json"
     if target.exists():

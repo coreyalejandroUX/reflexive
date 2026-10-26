@@ -6,7 +6,7 @@
 |---|---|
 | Too tired to speak | "Just a marker": about 2 seconds, a complete entry. |
 | Cannot face reviewing | Do not open Check. Nothing reminds you, and nothing counts days. |
-| Review starts to spiral | The stop rule ends the session itself (10 cards, 8 minutes, 3 "not sure" in a row, or a reopened card). The end screen is the same every time. |
+| Review starts to spiral | The stop rule ends the session itself (10 cards, 8 minutes, 3 "hold" in a row, or a reopened card). The end screen is the same every time. |
 | A planted card feels like it is about *you* | "Is this one planted?" reveals that one card and removes it. The seed rules forbid false facts about your life, so if a card feels that way, it is a bug to report. |
 | Several hard days in a row | Pause study. Capture keeps working. Resume when you choose, with no message on return. The pause is logged as a fact, not a failure. |
 | Unblinding results hurt | Read them with the escrow person, framed as interface performance. Your catch rate measures phones and buses, not your worth. |

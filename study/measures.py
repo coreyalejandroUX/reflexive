@@ -6,7 +6,7 @@ Inputs
   decisions.jsonl  one review decision per line (written during the study):
       decision_id, session_id, item_id, device (phone|desktop),
       presented_at, decided_at (ISO 8601), dwell_ms (number),
-      outcome (supported|not_supported|unsure|stopped),
+      agent_action_id, outcome (approve|narrow|hold|reject|stopped),
       item_words (number), interrupted (bool)
     The phone (Phase 0 Shortcut) cannot see app switches, so any dwell longer
     than --interrupt-s also counts as interrupted for timing.
@@ -14,9 +14,9 @@ Inputs
       item_id, seeded (bool), seed_kind (unsupported_claim|wrong_code|null)
 
 Outputs, per device and overall (JSON on stdout):
-  catch_rate          seeded items flagged (not_supported or unsure) / seeded decided
-  catch_rate_strict   seeded items marked not_supported / seeded decided
-  escape_rate         seeded unsupported claims accepted / seeded unsupported claims decided
+  catch_rate          seeded items not approved (narrow, hold or reject) / seeded decided
+  catch_rate_strict   seeded items actively corrected (narrow or reject) / seeded decided
+  escape_rate         seeded unsupported claims approved / seeded unsupported claims decided
   false_flag_rate     clean items flagged / clean decided
   rubber_stamp_rate   accepts faster than a minimum reading time / all accepts
   median_dwell_s      over decided, uninterrupted items
@@ -45,8 +45,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "schema"))
 from reflexive_schema import enum, validate  # noqa: E402
 
 DEVICES = tuple(enum("device"))
-DECIDED = {"supported", "not_supported", "unsure"}
-FLAGGED = {"not_supported", "unsure"}
+DECIDED = {"approve", "narrow", "hold", "reject"}
+FLAGGED = {"narrow", "hold", "reject"}
+CORRECTED = {"narrow", "reject"}
 
 
 def validate_decision(d: dict):
@@ -88,7 +89,7 @@ def summarize(decisions, key, wps, interrupt_s=120):
     seeded = [d for d in decided if key[d["item_id"]]["seeded"]]
     clean = [d for d in decided if not key[d["item_id"]]["seeded"]]
     claims = [d for d in seeded if key[d["item_id"]].get("seed_kind") == "unsupported_claim"]
-    accepts = [d for d in decided if d["outcome"] == "supported"]
+    accepts = [d for d in decided if d["outcome"] == "approve"]
     stamps = [d for d in accepts if d["dwell_ms"] < min_read_ms(d["item_words"], wps)]
     timed = [d["dwell_ms"] / 1000 for d in decided
              if not d["interrupted"] and d["dwell_ms"] <= interrupt_s * 1000]
@@ -96,8 +97,8 @@ def summarize(decisions, key, wps, interrupt_s=120):
         "decided": len(decided),
         "seeded_decided": len(seeded),
         "catch_rate": wilson(sum(d["outcome"] in FLAGGED for d in seeded), len(seeded)),
-        "catch_rate_strict": wilson(sum(d["outcome"] == "not_supported" for d in seeded), len(seeded)),
-        "escape_rate": wilson(sum(d["outcome"] == "supported" for d in claims), len(claims)),
+        "catch_rate_strict": wilson(sum(d["outcome"] in CORRECTED for d in seeded), len(seeded)),
+        "escape_rate": wilson(sum(d["outcome"] == "approve" for d in claims), len(claims)),
         "false_flag_rate": wilson(sum(d["outcome"] in FLAGGED for d in clean), len(clean)),
         "rubber_stamp_rate": wilson(len(stamps), len(accepts)),
         "median_dwell_s": round(statistics.median(timed), 1) if timed else None,
